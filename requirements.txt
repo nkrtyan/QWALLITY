@@ -1,0 +1,11 @@
+colorama==0.4.6
+comtypes==1.4.10
+Faker==37.1.0
+iniconfig==2.1.0
+packaging==24.2
+pluggy==1.5.0
+pytest==8.3.5
+pywin32==310
+pywinauto==0.6.9
+six==1.17.0
+tzdata==2025.2
