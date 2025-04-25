@@ -1,9 +1,8 @@
 from Pages.main import Main
 from faker import Faker
-
+faker = Faker()
 
 def test_sum(app):
-    faker = Faker()
     main_obj = Main(app)
     num_1 = faker.random_number(digits=1)
     num_2 = faker.random_number(digits=1)
