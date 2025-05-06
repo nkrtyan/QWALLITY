@@ -1,0 +1,310 @@
+{
+	"info": {
+		"_postman_id": "c97933d6-8715-4d17-bc4d-13b7cf15b31b",
+		"name": "Staff.am",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7116528"
+	},
+	"item": [
+		{
+			"name": "Get_Build_Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const html = pm.response.text();\r",
+							"const match = html.match(/\"buildId\":\"([^\"]+)\"/);\r",
+							"\r",
+							"if (match) {\r",
+							"    pm.environment.set(\"buildId\", match[1]);\r",
+							"} else {\r",
+							"    pm.environment.set(\"buildId\", \"not_found\");\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://staff.am/en/jobs?category=2&key_word=&sort_by=0",
+					"protocol": "https",
+					"host": [
+						"staff",
+						"am"
+					],
+					"path": [
+						"en",
+						"jobs"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "2"
+						},
+						{
+							"key": "key_word",
+							"value": ""
+						},
+						{
+							"key": "sort_by",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get_Jobs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"resp = pm.response.json()\r",
+							"jobs = resp['pageProps']['jobs']\r",
+							"\r",
+							"let company_titles = jobs.map(job => job?.companiesStruct?.title?.en)\r",
+							"let job_titles= jobs.map(job => job?.title?.en)\r",
+							"let slug  = jobs.map(job=> job?.slug?.en)\r",
+							"let url= pm.collectionVariables.get(\"url\")\r",
+							"let category= jobs[0].category.code\r",
+							"\r",
+							"// create combined arrays of job titles and company titles\r",
+							"let jobs_data = [];\r",
+							"for (let i = 0; i < job_titles.length; i++) {\r",
+							"    if (job_titles[i]){\r",
+							"        jobs_data.push({\r",
+							"            jobTitle: job_titles[i],\r",
+							"            companyTitle: company_titles[i],\r",
+							"            company_url:url+'/'+category+'/'+slug[i]\r",
+							"        })\r",
+							"    };\r",
+							"}\r",
+							"\r",
+							"console.log(jobs_data)\r",
+							"pm.environment.set(\"Jobs\", JSON.stringify(jobs_data))"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://staff.am/_next/data/{{buildId}}/en/jobs.json?category=2&key_word=&sort_by=0&job_candidate_level={{level_students}}, {{level_junior}}",
+					"protocol": "https",
+					"host": [
+						"staff",
+						"am"
+					],
+					"path": [
+						"_next",
+						"data",
+						"{{buildId}}",
+						"en",
+						"jobs.json"
+					],
+					"query": [
+						{
+							"key": "category",
+							"value": "2"
+						},
+						{
+							"key": "key_word",
+							"value": ""
+						},
+						{
+							"key": "sort_by",
+							"value": "0"
+						},
+						{
+							"key": "job_candidate_level",
+							"value": "{{level_students}}, {{level_junior}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate Report JSON",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let job_data = JSON.parse(pm.environment.get(\"Jobs\"))\r",
+							"let markdownContent = \"QA Jobs \\n\";\r",
+							"\r",
+							"job_data.forEach(job => {\r",
+							"  markdownContent += `Job Title: ${job.jobTitle}\\nCompany: ${job.companyTitle}\\nJob URL: ${job.company_url}\\n\\n`;\r",
+							"});\r",
+							"\r",
+							"// Save the markdown content as an environment variable\r",
+							"pm.environment.set(\"MARKDOWN_CONTENT\", markdownContent);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{API_Key_from_Mailgun}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer kaPTR7^%PNEgYqQcdb7eb6f0e858cbe7e1439860216004c-10b6f382-2f111bf8",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "from",
+							"value": "nkrtyan@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "to",
+							"value": "an.harutyunova@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "subject",
+							"value": "QA Positions",
+							"type": "text"
+						},
+						{
+							"key": "text",
+							"value": "{{MARKDOWN_CONTENT}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://api.mailgun.net/v3/sandbox4cad6f0afd24444b9979ddc570244d9f.mailgun.org/messages?from",
+					"protocol": "https",
+					"host": [
+						"api",
+						"mailgun",
+						"net"
+					],
+					"path": [
+						"v3",
+						"sandbox4cad6f0afd24444b9979ddc570244d9f.mailgun.org",
+						"messages"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "level_students",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "level_junior",
+			"value": "2",
+			"type": "string"
+		},
+		{
+			"key": "level_mid",
+			"value": "3",
+			"type": "string"
+		},
+		{
+			"key": "level_senior",
+			"value": "4",
+			"type": "string"
+		},
+		{
+			"key": "level_c",
+			"value": "5",
+			"type": "string"
+		},
+		{
+			"key": "url",
+			"value": "https://staff.am/jobs",
+			"type": "string"
+		}
+	]
+}
