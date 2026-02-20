@@ -31,7 +31,8 @@ def save_json(path: str, data: Any) -> None:
 
 
 def read_chunk_text(article_dir: str, slug: str) -> str:
-    fp = os.path.join(article_dir, f"{slug}.txt")
+    slug = slug.removesuffix(".md").removesuffix(".txt")
+    fp = os.path.join(article_dir, f"{slug}.md")
     if not os.path.exists(fp):
         return ""
     with open(fp, "r", encoding="utf-8") as f:
